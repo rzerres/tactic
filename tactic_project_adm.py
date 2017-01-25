@@ -35,7 +35,8 @@ import sys
 # Declarations
 ###
 sthpw_tables = [ 'file', 'snapshot', 'task', 'note', 'wdg_settings', 'pref_setting', 'project' ]
-tactic_projects = 'dw_00_test,dw_00_test2,dw_25_jojo,dw_40_as_moderation,dw_dev,p36_as_rolli_stella,p40_as_moderation,p42_mullewapp2,44_sorgenfresser,p47_molly,p50_sfr,p45_s71_rtl_fussballer,p46_as-fahrschule2'
+tactic_projects = 'p50_sfr'
+#tactic_projects = 'dw_00_test,dw_00_test2,dw_25_jojo,dw_40_as_moderation,dw_dev,p36_as_rolli_stella,p40_as_moderation,p42_mullewapp2,44_sorgenfresser,p47_molly,p50_sfr,p45_s71_rtl_fussballer,p46_as-fahrschule2'
 
 ###
 # Function Definitions
@@ -73,13 +74,13 @@ def parse_args():
 							help='running given mode')
 		parser.add_argument('--host',
 							nargs='?', const='host', default='localhost',
-							help='hostname running the database')
+							help="hostname running the database [default: localhost]")
 		parser.add_argument('--port',
 							nargs='?', const='port', default='5432',
-							help='portname the database is listening to')
+							help='portname the database is listening to [default: 5432]')
 		parser.add_argument('--user',
 							nargs='?', const='user', default='postgres',
-							help='database-user')
+							help='database-user [default: postgres]')
 		parser.add_argument('--database',
 							nargs='?', dest='dbname', const='dbname', default='sthpw',
 							help='the tactic database-name')
@@ -129,8 +130,8 @@ def projects_delete(projects):
 								clause = 'code'
 						else:
 								clause = 'project_code'
-								rows = db.rows_delete(project, table, clause)
 								#rows = db.rows_truncate(project, table, clause)
+						rows = db.rows_delete(project, table, clause)
 						print(" -> table '%s': %d rows deleted" % (table,rows))
 
 				drop_database(project)
@@ -243,7 +244,7 @@ class DB:
 						print("[connect] connection string: %s'" % connect)
 						print(e)
 
-				def close(self):
+		def close(self):
 				try:
 						if (args.verbose) >= 3:
 								print("[close] db-cursor: %s" % cursor)
@@ -413,9 +414,9 @@ class DB:
 						sql_cmd="SELECT * FROM " + table + " WHERE " + clause + "='" + project + "';"
 						if (args.verbose) >= 3:
 								print(" -> sql command: %s" % sql_cmd)
-								cursor.execute(sql_cmd)
-								rows = cursor.fetchall()
-								cursor.close()
+						cursor.execute(sql_cmd)
+						rows = cursor.fetchall()
+						cursor.close()
 				except Exception as e:
 						print("psycopg2 can't establish a connection")
 						print("connection string: %s" % self.string_connect)
@@ -463,6 +464,9 @@ if __name__ == "__main__":
 
 # process calling arguments
 args = parse_args()
+if len(projects) is 0:
+		print("please provide a tacitc projects list")
+		sys.exit(1)
 
 if (args.dryrun) is False:
 		# create db object
@@ -477,7 +481,7 @@ if (args.dryrun) is False:
 						print("DB-Connection: %s" % db)
 		else:
 		   		# Database connection error
-				print("%s" % db_error)
+				print("%s" % ret)
 				sys.exit(1)
 else:
 		print("would run: db.exist(%s)" % args.dbname)
